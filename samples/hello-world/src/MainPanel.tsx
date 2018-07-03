@@ -54,6 +54,11 @@ class MainPanel extends RX.Component<MainPanelProps, null> {
     private _translationValue: RX.Animated.Value;
     private _animatedStyle: RX.Types.AnimatedTextStyleRuleSet;
 
+    private _mountedButton: RX.Button;
+
+    private _popupId = 'myPopup';
+    private _popupDisplayed = false;
+
     constructor(props: MainPanelProps) {
         super(props);
 
@@ -69,46 +74,66 @@ class MainPanel extends RX.Component<MainPanelProps, null> {
 
     componentDidMount() {
         let animation = RX.Animated.timing(this._translationValue, {
-              toValue: 0,
-              easing: RX.Animated.Easing.OutBack(),
-              duration: 500
-            }
+            toValue: 0,
+            easing: RX.Animated.Easing.OutBack(),
+            duration: 500
+        }
         );
 
         animation.start();
     }
 
-    render() {
+    private _onButtonRef = (button: RX.Button) => {
+        this._mountedButton = button;
+    }
+
+    private _displayPopup = () => {
+        let popupOptions: RX.Types.PopupOptions = {
+            getAnchor: () => this._mountedButton,
+            renderPopup: this._renderPopupView,
+            positionPriorities: ['bottom', 'top', 'right', 'left'],
+            onDismiss: () => {
+                this._popupDisplayed = false;
+            }
+        };
+
+        RX.Popup.show(popupOptions, this._popupId, 500);
+        this._popupDisplayed = true;
+    }
+
+    private _renderPopupView(anchorPosition: any, anchorOffset: any, popupWidth: any, popupHeight: any) {
         return (
-            <RX.View useSafeInsets={ true }>
-                <RX.ScrollView style={ styles.scroll }>
-                    <RX.View style={ styles.container }>
-                        <RX.Animated.Text style={ [styles.helloWorld, this._animatedStyle] }>
-                            Hello World
-                        </RX.Animated.Text>
-                        <RX.Text style={ styles.welcome }>
-                            Welcome to ReactXP
-                        </RX.Text>
-                        <RX.Text style={ styles.instructions }>
-                            Edit App.tsx to get started
-                        </RX.Text>
-                        <RX.Link style={ styles.docLink } url={ 'https://microsoft.github.io/reactxp/docs' }>
-                            View ReactXP documentation
-                        </RX.Link>
-                        
-                        <RX.Button style={ styles.roundButton } onPress={ this._onPressNavigate }>
-                            <RX.Text style={ styles.buttonText }>
-                                See More Examples
-                            </RX.Text>
-                        </RX.Button>
-                    </RX.View>
-                </RX.ScrollView>
+            <RX.View>
+                <RX.Text
+                    style={RX.Styles.createTextStyle({
+                        backgroundColor: 'teal',
+                        borderRadius: 3,
+                        padding: 8,
+                    })}
+                >
+                    Popup content
+                </RX.Text>
+            </RX.View>
+        )
+    }
+
+    render() {
+        console.log(this._popupDisplayed);
+
+        return (
+            <RX.View style={styles.container}>
+                <RX.Button
+                    ref={this._onButtonRef}
+                    onPress={this._displayPopup}
+                >
+                    Pop!
+                </RX.Button>
+
+                <RX.Animated.Text style={[styles.helloWorld, this._animatedStyle]}>
+                    Hello World
+                </RX.Animated.Text>
             </RX.View>
         );
-    }
-    
-    private _onPressNavigate = () => {
-        this.props.onPressNavigate();
     }
 }
 
